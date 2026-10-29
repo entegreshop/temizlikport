@@ -1,0 +1,36 @@
+---
+// src/pages/index.astro
+export const prerender = false;
+import InstantQuoteCalculator from '../components/quote/InstantQuoteCalculator.astro';
+import { TEMIZLIKPORT_SERVICES_SEED } from '../lib/medusa-service-schema';
+
+const MEDUSA_BACKEND_URL = import.meta.env.PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:3080';
+let services = TEMIZLIKPORT_SERVICES_SEED;
+
+try {
+  const res = await fetch(`${MEDUSA_BACKEND_URL}/store/products`);
+  if (res.ok) {
+    const data = await res.json();
+    if (Array.isArray(data.products) && data.products.length > 0) {
+      services = data.products;
+    }
+  }
+} catch {
+  // Medusa servisi devreye girene kadar yerel şema kullanılır
+}
+---
+
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TemizlikPort | Kurumsal Ofis, Plaza ve Endüstriyel Temizlik Hizmetleri</title>
+  <meta name="description" content="TemizlikPort ile ofis, plaza, inşaat sonrası ve fabrika temizliğinde metrekareye göre anında fiyat hesaplayın, İSG belgeli ve sigortalı ekibinizi online planlayın." />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+  <InstantQuoteCalculator />
+</body>
+</html>
+

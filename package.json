@@ -1,0 +1,22 @@
+{
+  "name": "temizlikport-platform",
+  "version": "1.0.0",
+  "description": "TemizlikPort.com - Astro SSR + Tailwind CSS + Alpine.js & MedusaJS Kurumsal Temizlik Hizmet Platformu",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "astro:dev": "astro dev",
+    "astro:build": "astro build"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.4",
+    "@astrojs/tailwind": "^5.1.1",
+    "alpinejs": "^3.14.3",
+    "astro": "^4.15.0",
+    "tailwindcss": "^3.4.13"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+

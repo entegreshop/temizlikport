@@ -1,0 +1,245 @@
+---
+// src/components/quote/InstantQuoteCalculator.astro
+// Alpine.js ile reaktif m², oda, periyot hesaplama ve MedusaJS Cart/LineItem entegrasyonu
+---
+
+<div
+  x-data="cleaningQuoteEngine()"
+  class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid lg:grid-cols-12"
+>
+  <!-- SOL 7 SÜTUN: İNTERAKTİF SEÇİM PARAMETRELERİ -->
+  <div class="lg:col-span-7 p-6 sm:p-10 space-y-8">
+    
+    <!-- 1. Hizmet Türü Seçimi -->
+    <div>
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+        1. Hizmet Kategorisini Seçin
+      </label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <template x-for="srv in serviceTypes" :key="srv.id">
+          <button
+            type="button"
+            @click="selectedServiceId = srv.id"
+            :class="selectedServiceId === srv.id
+              ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 text-blue-950'
+              : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'"
+            class="p-4 rounded-2xl border text-left transition-all flex items-start justify-between gap-3"
+          >
+            <div>
+              <div class="font-bold text-sm" x-text="srv.name"></div>
+              <div class="text-xs text-slate-500 mt-0.5" x-text="srv.shortDesc"></div>
+            </div>
+            <span class="text-xs font-extrabold text-blue-600 shrink-0" x-text="srv.ratePerSqm + ' ₺/m²'"></span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- 2. Metrekare (m²) Slider & Hızlı Butonlar -->
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label for="sqm-range" class="text-xs font-bold uppercase tracking-wider text-slate-500">
+          2. Temizlenecek Toplam Alan (m²)
+        </label>
+        <div class="px-3.5 py-1 rounded-xl bg-blue-600 text-white font-extrabold text-sm">
+          <span x-text="squareMeters"></span> m²
+        </div>
+      </div>
+
+      <input
+        id="sqm-range"
+        type="range"
+        min="50"
+        max="2500"
+        step="25"
+        x-model.number="squareMeters"
+        class="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+      />
+
+      <div class="flex flex-wrap gap-2 mt-3">
+        <template x-for="preset in [100, 250, 500, 1000, 1500, 2500]" :key="preset">
+          <button
+            type="button"
+            @click="squareMeters = preset"
+            :class="squareMeters === preset ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+            class="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
+            x-text="preset + ' m²'"
+          ></button>
+        </template>
+      </div>
+    </div>
+
+    <!-- 3. Oda / Bölüm ve WC Sayısı Seçimi -->
+    <div class="grid sm:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          3. Oda / Toplantı Odası / Bölüm Sayısı
+        </label>
+        <div class="flex items-center justify-between p-2 rounded-xl border border-slate-200 bg-slate-50">
+          <button
+            type="button"
+            @click="roomCount = Math.max(1, roomCount - 1)"
+            class="w-10 h-10 rounded-lg bg-white border border-slate-200 font-bold text-lg text-slate-700 hover:bg-slate-100"
+          >-</button>
+          <span class="font-extrabold text-base text-slate-900" x-text="roomCount + ' Bölüm / Oda'"></span>
+          <button
+            type="button"
+            @click="roomCount = Math.min(50, roomCount + 1)"
+            class="w-10 h-10 rounded-lg bg-white border border-slate-200 font-bold text-lg text-slate-700 hover:bg-slate-100"
+          >+</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          4. Islak Hacim (Mutfak / WC) Sayısı
+        </label>
+        <div class="flex items-center justify-between p-2 rounded-xl border border-slate-200 bg-slate-50">
+          <button
+            type="button"
+            @click="restroomCount = Math.max(1, restroomCount - 1)"
+            class="w-10 h-10 rounded-lg bg-white border border-slate-200 font-bold text-lg text-slate-700 hover:bg-slate-100"
+          >-</button>
+          <span class="font-extrabold text-base text-slate-900" x-text="restroomCount + ' WC / Mutfak'"></span>
+          <button
+            type="button"
+            @click="restroomCount = Math.min(30, restroomCount + 1)"
+            class="w-10 h-10 rounded-lg bg-white border border-slate-200 font-bold text-lg text-slate-700 hover:bg-slate-100"
+          >+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Hizmet Periyodu -->
+    <div>
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+        5. Hizmet Sıklığı (Sözleşmeli Periyodik İndirim)
+      </label>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <template x-for="freq in frequencies" :key="freq.id">
+          <button
+            type="button"
+            @click="selectedFrequency = freq.id"
+            :class="selectedFrequency === freq.id
+              ? 'border-blue-600 bg-blue-600 text-white'
+              : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'"
+            class="p-3 rounded-xl border text-center transition-all"
+          >
+            <div class="text-xs font-bold" x-text="freq.label"></div>
+            <div
+              class="text-[11px] mt-0.5 font-semibold"
+              :class="selectedFrequency === freq.id ? 'text-sky-200' : 'text-emerald-600'"
+              x-text="freq.badge"
+            ></div>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- 6. Ekstra Hizmetler -->
+    <div>
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+        6. Ek Hizmet Seçenekleri (Opsiyonel)
+      </label>
+      <div class="grid sm:grid-cols-2 gap-2.5">
+        <template x-for="addon in addons" :key="addon.id">
+          <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              <input type="checkbox" :value="addon.id" x-model="selectedAddons" class="w-4 h-4 rounded accent-blue-600" />
+              <span class="text-xs font-semibold text-slate-800" x-text="addon.title"></span>
+            </div>
+            <span class="text-xs font-bold text-blue-600" x-text="'+' + addon.price + ' ₺'"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SAĞ 5 SÜTUN: CANLI TEKLİF ÖZETİ & MEDUSA SEPET / REZERVASYON GÖNDERİMİ -->
+  <div class="lg:col-span-5 bg-slate-900 text-white p-6 sm:p-10 flex flex-col justify-between space-y-6">
+    <div class="space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Anlık Kurumsal Teklif</span>
+          <h3 class="text-xl font-extrabold mt-0.5" x-text="currentService.name"></h3>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-sky-300 text-xs font-bold">
+          <span x-text="recommendedStaffCount"></span> Uzman Personel
+        </span>
+      </div>
+
+      <div class="space-y-3 text-sm border-b border-slate-800 pb-5">
+        <div class="flex justify-between text-slate-300">
+          <span>Alan Büyüklüğü &amp; Oda:</span>
+          <strong class="text-white"><span x-text="squareMeters"></span> m² / <span x-text="roomCount"></span> Bölüm</strong>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span>Baz Operasyon Bedeli:</span>
+          <span x-text="formatCurrency(rawBaseTotal)"></span>
+        </div>
+        <div class="flex justify-between text-slate-300" x-show="discountAmount > 0">
+          <span class="text-emerald-400">Periyodik Sözleşme İndirimi:</span>
+          <span class="text-emerald-400 font-bold" x-text="'-' + formatCurrency(discountAmount)"></span>
+        </div>
+        <div class="flex justify-between text-slate-300" x-show="addonsTotal > 0">
+          <span>Seçilen Ek Hizmetler:</span>
+          <span x-text="'+' + formatCurrency(addonsTotal)"></span>
+        </div>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-gradient-to-br from-blue-900/80 to-slate-800 border border-blue-500/30">
+        <div class="text-xs text-blue-200">Tahmini Sefer Başına Net Tutar (KDV Hariç)</div>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-3xl sm:text-4xl font-extrabold text-white" x-text="formatCurrency(finalPrice)"></span>
+          <span class="text-xs text-sky-300 font-semibold">/ ziyaret</span>
+        </div>
+        <p class="text-[11px] text-slate-300 mt-2">
+          ✓ Tüm temizlik makineleri, kimyasallar, personel SGK ve İSG ekipmanları fiyata dahildir.
+        </p>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <input
+          type="text"
+          x-model="customerCompany"
+          placeholder="Firma Adınız / Ad Soyad *"
+          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-sky-400"
+        />
+        <div class="grid grid-cols-2 gap-3">
+          <input
+            type="tel"
+            x-model="customerPhone"
+            placeholder="Telefon (05xx) *"
+            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-sky-400"
+          />
+          <input
+            type="date"
+            x-model="serviceDate"
+            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-sky-400"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <button
+        type="button"
+        @click="submitQuoteToMedusa()"
+        :disabled="isSubmitting"
+        class="w-full py-4 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-extrabold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2"
+      >
+        <span x-show="!isSubmitting">Hemen Rezervasyon &amp; Resmi Teklif Oluştur →</span>
+        <span x-show="isSubmitting">Medusa Hizmet Motoruna Kaydediliyor...</span>
+      </button>
+
+      <div
+        x-show="submitSuccessMessage"
+        x-transition
+        class="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs text-center font-medium"
+        x-text="submitSuccessMessage"
+      ></div>
+    </div>
+  </div>
+</div>
+

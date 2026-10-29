@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TemizlikPort Yönetim Paneli | Fiyatlandırma, WhatsApp & Referans Bandı</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Space Grotesk"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 px-2.5 rounded-xl bg-white flex items-center justify-center shadow">
+          <img src="/images/temizlikport-icon.png" alt="TemizlikPort" class="h-8 w-auto object-contain" />
+        </div>
+        <div>
+          <span class="font-bold font-heading text-white text-sm sm:text-base">TEMİZLİK<span class="text-sky-400">PORT</span> Control Center</span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400 font-mono text-[10px]">Fiyatlandırma &amp; Referans Motoru</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-mono text-xs">
+          🌐 Siteyi Gör ↗
+        </a>
+        <button onclick="saveAllAdminConfig()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold shadow-lg shadow-emerald-600/25">
+          💾 Tüm Ayarları Kaydet
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Bildirim Kutusu -->
+    <div id="admin-toast" class="hidden p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center justify-between">
+      <span id="admin-toast-msg">Ayarlar başarıyla kaydedildi!</span>
+      <button onclick="document.getElementById('admin-toast').classList.add('hidden')">&times;</button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <span class="text-xs font-mono text-slate-400">Gelen Online Teklif</span>
+        <div id="kpi-total-res" class="text-2xl font-extrabold font-heading text-white mt-1">0</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <span class="text-xs font-mono text-slate-400">Toplam Hesaplanan Alan</span>
+        <div id="kpi-total-sqm" class="text-2xl font-extrabold font-heading text-sky-400 mt-1">0 m²</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <span class="text-xs font-mono text-slate-400">Teklif Hacmi</span>
+        <div id="kpi-total-rev" class="text-2xl font-extrabold font-heading text-emerald-400 mt-1">0 ₺</div>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <span class="text-xs font-mono text-slate-400">Kayan Bant Referans Sayısı</span>
+        <div id="kpi-total-refs" class="text-2xl font-extrabold font-heading text-amber-400 mt-1">0 Firma</div>
+      </div>
+    </div>
+
+    <!-- 1. WHATSAPP & GENEL FİYATLANDIRMA KURALLARI (ODA, WC, MİNİMUM TUTAR, PERİYOT İNDİRİMİ) -->
+    <div class="grid lg:grid-cols-12 gap-6">
+
+      <!-- Sol 6 Sütun: WhatsApp & Temel Çarpanlar -->
+      <div class="lg:col-span-6 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+        <div class="border-b border-slate-800 pb-3">
+          <h2 class="text-base font-bold font-heading text-white">💬 WhatsApp Hattı &amp; Genel Hesaplama Çarpanları</h2>
+          <p class="text-xs text-slate-400">Oda başı ücret, WC başı ücret, minimum sepet tutarı ve WhatsApp numarasını buradan belirleyin.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-emerald-400 mb-1">WhatsApp Numarası (Ülke Koduyla)</label>
+            <input type="text" id="cfg-whatsapp" placeholder="905320000000" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-emerald-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">Gösterilen Kurumsal Telefon</label>
+            <input type="text" id="cfg-phone" placeholder="0850 300 00 00" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-sky-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">Oda / Bölüm Başı Ücret (₺)</label>
+            <input type="number" id="cfg-room-surcharge" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sky-400 font-bold text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">WC / Mutfak Başı Ücret (₺)</label>
+            <input type="number" id="cfg-wc-surcharge" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sky-400 font-bold text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-mono text-slate-300 mb-1">Min. Operasyon Tutarı (₺)</label>
+            <input type="number" id="cfg-min-order" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-bold text-xs font-mono" />
+          </div>
+        </div>
+
+        <!-- Periyodik İndirim Oranları -->
+        <div class="pt-3 border-t border-slate-800">
+          <label class="block text-xs font-mono text-amber-400 mb-2 font-bold">Periyodik Sözleşme İndirim Yüzdeleri (%)</label>
+          <div id="frequencies-editor" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- Sağ 6 Sütun: Ek Hizmetler (Add-ons) Fiyat Yönetimi -->
+      <div class="lg:col-span-6 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="border-b border-slate-800 pb-3">
+            <h2 class="text-base font-bold font-heading text-white">➕ Ek Hizmet Seçenekleri &amp; Fiyatları</h2>
+            <p class="text-xs text-slate-400">Hesaplama formundaki opsiyonel ek hizmetlerin (Halı yıkama, ULV dezenfeksiyon vb.) fiyatlarını tanımlayın.</p>
+          </div>
+
+          <div id="addons-editor-list" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Yeni Ek Hizmet Ekle -->
+        <div class="pt-3 border-t border-slate-800 flex gap-2">
+          <input type="text" id="new-addon-title" placeholder="Yeni Ek Hizmet Adı (Örn: Kristalize Cila)" class="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono" />
+          <input type="number" id="new-addon-price" placeholder="Fiyat (₺)" class="w-28 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 text-xs font-mono font-bold" />
+          <button type="button" onclick="addNewAddon()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold shrink-0">
+            + Ekle
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. HİZMET KATEGORİLERİ & METREKARE (m²) BİRİM FİYAT YÖNETİMİ -->
+    <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-base font-bold font-heading text-white">🧹 Hizmet Kategorileri &amp; m² Birim Fiyatları</h2>
+          <p class="text-xs text-slate-400">Her temizlik kategorisinin m² başına fiyatını, sabit başlangıç ekip ücretini ve vitrin fiyatını özelleştirin.</p>
+        </div>
+        <button onclick="saveAllAdminConfig()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold">
+          💾 m² Fiyatlarını Güncelle
+        </button>
+      </div>
+
+      <div id="services-editor-grid" class="grid md:grid-cols-2 gap-5"></div>
+    </div>
+
+    <!-- 3. KAYAN REFERANS LOGOLARI & BANT YÖNETİMİ -->
+    <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-base font-bold font-heading text-white">🏆 Kayan Referans Logoları &amp; Firma İsimleri Yönetimi</h2>
+          <p class="text-xs text-slate-400">Ana sayfadaki kayan referans bandına yeni firma ismi ve logosu yükleyin veya mevcutları çıkarın.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-mono text-slate-400">Bant Hızı (sn):</label>
+          <input type="number" id="ref-band-speed" value="30" class="w-20 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white font-mono text-xs" />
+        </div>
+      </div>
+
+      <!-- Yeni Referans Firma + Logo Ekleme Formu -->
+      <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 grid sm:grid-cols-12 gap-3 items-end">
+        <div class="sm:col-span-4">
+          <label class="block text-[11px] font-mono text-slate-300 mb-1">Firma / Kurum Adı *</label>
+          <input type="text" id="new-ref-name" placeholder="Örn: ACIBADEM HOLDİNG" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs font-mono" />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block text-[11px] font-mono text-slate-300 mb-1">Hizmet Verilen Alan / Sektör</label>
+          <input type="text" id="new-ref-sector" placeholder="Örn: 3.200 m² Genel Merkez" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs font-mono" />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block text-[11px] font-mono text-slate-300 mb-1">Firma Logosu (PNG/SVG/JPG veya Otomatik)</label>
+          <input type="file" id="new-ref-file" accept="image/*" onchange="handleRefFileSelect(event)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-mono file:bg-slate-800 file:text-sky-400 hover:file:bg-slate-700" />
+        </div>
+        <div class="sm:col-span-2">
+          <button type="button" onclick="addNewReference()" class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-xs font-bold">
+            ➕ Banda Ekle
+          </button>
+        </div>
+      </div>
+
+      <!-- Ekli Referans Logoları Grid -->
+      <div id="references-admin-grid" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </div>
+
+    <!-- 4. GELEN m² REZERVASYON & TEKLİF TALEPLERİ -->
+    <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-base font-bold font-heading text-white">📋 Gelen m² Hesaplama &amp; Rezervasyon Talepleri</h2>
+          <p class="text-xs text-slate-400">Müşterinin seçtiği metrekare, oda ve hesaplanan fiyat bilgileri</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 font-mono">
+              <th class="py-3 px-3">Kod / Tarih</th>
+              <th class="py-3 px-3">Firma / Telefon</th>
+              <th class="py-3 px-3">Hizmet</th>
+              <th class="py-3 px-3">Alan / Oda / Ekip</th>
+              <th class="py-3 px-3">Periyot</th>
+              <th class="py-3 px-3">Hesaplanan Tutar</th>
+              <th class="py-3 px-3">WhatsApp İletişim</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-tbody" class="divide-y divide-slate-800/70"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let currentSettings = {};
+    let currentFrequencies = [];
+    let currentAddons = [];
+    let currentServices = [];
+    let currentRefsSettings = {};
+    let currentRefs = [];
+    let uploadedRefLogoBase64 = '';
+
+    function showToast(msg) {
+      const t = document.getElementById('admin-toast');
+      const m = document.getElementById('admin-toast-msg');
+      if (t && m) {
+        m.textContent = msg;
+        t.classList.remove('hidden');
+        setTimeout(() => t.classList.add('hidden'), 3500);
+      }
+    }
+
+    function handleRefFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        uploadedRefLogoBase64 = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function loadAdminData() {
+      const [resReservations, resConfig] = await Promise.all([
+        fetch('/api/reservations').then(r => r.json()),
+        fetch('/api/services').then(r => r.json())
+      ]);
+
+      const reservations = resReservations.reservations || [];
+      currentSettings = resConfig.settings || {};
+      currentFrequencies = resConfig.frequencies || [];
+      currentAddons = resConfig.addons || [];
+      currentServices = resConfig.services || [];
+      currentRefsSettings = resConfig.referencesSettings || { enabled: true, speed: 30 };
+      currentRefs = resConfig.references || [];
+
+      // KPIs
+      document.getElementById('kpi-total-res').textContent = reservations.length;
+      const totalSqm = reservations.reduce((acc, r) => acc + Number(r.squareMeters || 0), 0);
+      const totalRev = reservations.reduce((acc, r) => acc + Number(r.calculatedPriceTL || 0), 0);
+      document.getElementById('kpi-total-sqm').textContent = totalSqm.toLocaleString('tr-TR') + ' m²';
+      document.getElementById('kpi-total-rev').textContent = totalRev.toLocaleString('tr-TR') + ' ₺';
+      document.getElementById('kpi-total-refs').textContent = currentRefs.length + ' Firma';
+
+      // Populate global pricing inputs
+      document.getElementById('cfg-whatsapp').value = currentSettings.whatsapp || '905320000000';
+      document.getElementById('cfg-phone').value = currentSettings.phone || '0850 300 00 00';
+      document.getElementById('cfg-room-surcharge').value = currentSettings.roomSurchargeTL ?? 140;
+      document.getElementById('cfg-wc-surcharge').value = currentSettings.restroomSurchargeTL ?? 220;
+      document.getElementById('cfg-min-order').value = currentSettings.minOrderPriceTL ?? 1500;
+      document.getElementById('ref-band-speed').value = currentRefsSettings.speed ?? 30;
+
+      // Render Frequencies
+      document.getElementById('frequencies-editor').innerHTML = currentFrequencies.map((f, idx) => `
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="text-[11px] font-bold text-slate-300 truncate">${f.label}</div>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="text-xs text-slate-500 font-mono">%</span>
+            <input type="number" min="0" max="70" value="${f.discountPercent}" onchange="currentFrequencies[${idx}].discountPercent = Number(this.value)" class="w-full px-2 py-1 rounded bg-slate-900 border border-slate-800 text-amber-400 font-mono text-xs font-bold" />
+          </div>
+        </div>
+      `).join('');
+
+      // Render Addons
+      renderAddonsEditor();
+
+      // Render Services
+      document.getElementById('services-editor-grid').innerHTML = currentServices.map((s, idx) => `
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <input type="text" value="${s.title}" onchange="currentServices[${idx}].title = this.value" class="font-bold text-sm bg-transparent border-b border-slate-800 focus:border-sky-400 text-white w-2/3 focus:outline-none" />
+            <span class="text-[10px] font-mono text-slate-500">${s.id}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] font-mono text-slate-400 mb-1">m² Birim Fiyatı (₺)</label>
+              <input type="number" step="0.5" value="${s.ratePerSqm}" onchange="currentServices[${idx}].ratePerSqm = Number(this.value)" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-sky-400 font-mono text-xs font-bold" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono text-slate-400 mb-1">Sabit Ekip Ücreti (₺)</label>
+              <input type="number" step="50" value="${s.baseFee}" onchange="currentServices[${idx}].baseFee = Number(this.value)" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white font-mono text-xs" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono text-slate-400 mb-1">Vitrin Başlangıç (₺)</label>
+              <input type="number" step="50" value="${s.basePriceTL}" onchange="currentServices[${idx}].basePriceTL = Number(this.value)" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 font-mono text-xs font-bold" />
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Render References
+      document.getElementById('references-admin-grid').innerHTML = currentRefs.map(r => `
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-12 h-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0">
+              <img src="${r.logoUrl}" alt="${r.name}" class="max-h-full max-w-full object-contain" />
+            </div>
+            <div class="truncate">
+              <div class="font-bold text-xs text-white truncate">${r.name}</div>
+              <div class="text-[10px] font-mono text-sky-400 truncate">${r.sector || ''}</div>
+            </div>
+          </div>
+          <button onclick="deleteReference('${r.id}')" class="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 font-mono text-xs shrink-0" title="Banttan Çıkar">Sil</button>
+        </div>
+      `).join('');
+
+      // Render Reservations
+      document.getElementById('reservations-tbody').innerHTML = reservations.map(r => {
+        const cleanPhone = String(r.customerPhone || '').replace(/\D/g, '');
+        const waPhone = cleanPhone.startsWith('0') ? '9' + cleanPhone : (cleanPhone.startsWith('90') ? cleanPhone : '90' + cleanPhone);
+        const waReplyUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`Merhaba ${r.customerCompany}, TemizlikPort üzerinden oluşturduğunuz ${r.squareMeters} m² (${r.serviceType}) kurumsal temizlik teklif talebiniz için ulaşıyoruz.`)}`;
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-3 px-3 font-mono">
+              <div class="font-bold text-sky-400">${r.id}</div>
+              <div class="text-[10px] text-slate-500">${r.preferredDate || '-'}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="font-bold text-white">${r.customerCompany}</div>
+              <div class="text-slate-400 font-mono">${r.customerPhone}</div>
+            </td>
+            <td class="py-3 px-3 font-semibold text-slate-200">${r.serviceType}</td>
+            <td class="py-3 px-3 font-mono">
+              <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold">${r.squareMeters} m²</span>
+              <span class="text-slate-400 ml-1">${r.roomCount} Oda / ${r.recommendedStaff || 1} Personel</span>
+            </td>
+            <td class="py-3 px-3 text-slate-300">${r.frequency}</td>
+            <td class="py-3 px-3 font-mono font-bold text-emerald-400 text-sm">${Number(r.calculatedPriceTL || 0).toLocaleString('tr-TR')} ₺</td>
+            <td class="py-3 px-3">
+              <a href="${waReplyUrl}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 font-mono text-[11px] font-bold transition-colors inline-flex items-center gap-1">
+                💬 WhatsApp'tan Yaz
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAddonsEditor() {
+      const wrap = document.getElementById('addons-editor-list');
+      wrap.innerHTML = currentAddons.map((a, idx) => `
+        <div class="flex items-center gap-2">
+          <input type="text" value="${a.title}" onchange="currentAddons[${idx}].title = this.value" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono" />
+          <input type="number" value="${a.price}" onchange="currentAddons[${idx}].price = Number(this.value)" class="w-28 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-emerald-400 text-xs font-mono font-bold" />
+          <button type="button" onclick="removeAddon(${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 text-xs font-mono">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    function addNewAddon() {
+      const titleEl = document.getElementById('new-addon-title');
+      const priceEl = document.getElementById('new-addon-price');
+      const title = (titleEl.value || '').trim();
+      const price = Number(priceEl.value || 0);
+      if (!title) return alert('Lütfen ek hizmet adını girin.');
+      currentAddons.push({ id: 'addon_' + Date.now(), title, price });
+      titleEl.value = '';
+      priceEl.value = '';
+      renderAddonsEditor();
+    }
+
+    function removeAddon(idx) {
+      currentAddons.splice(idx, 1);
+      renderAddonsEditor();
+    }
+
+    async function saveAllAdminConfig() {
+      currentSettings.whatsapp = document.getElementById('cfg-whatsapp').value.trim();
+      currentSettings.phone = document.getElementById('cfg-phone').value.trim();
+      currentSettings.roomSurchargeTL = Number(document.getElementById('cfg-room-surcharge').value || 140);
+      currentSettings.restroomSurchargeTL = Number(document.getElementById('cfg-wc-surcharge').value || 220);
+      currentSettings.minOrderPriceTL = Number(document.getElementById('cfg-min-order').value || 1500);
+      currentRefsSettings.speed = Number(document.getElementById('ref-band-speed').value || 30);
+
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          settings: currentSettings,
+          frequencies: currentFrequencies,
+          addons: currentAddons,
+          services: currentServices,
+          referencesSettings: currentRefsSettings,
+          references: currentRefs
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('✓ Tüm fiyatlandırma kuralları, WhatsApp ayarları ve referans bandı güncellendi!');
+        loadAdminData();
+      }
+    }
+
+    async function addNewReference() {
+      const nameEl = document.getElementById('new-ref-name');
+      const sectorEl = document.getElementById('new-ref-sector');
+      const fileEl = document.getElementById('new-ref-file');
+      const name = (nameEl.value || '').trim();
+      if (!name) return alert('Lütfen firma adını girin.');
+
+      const res = await fetch('/api/references', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          sector: (sectorEl.value || '').trim(),
+          logoBase64: uploadedRefLogoBase64
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        nameEl.value = '';
+        sectorEl.value = '';
+        if (fileEl) fileEl.value = '';
+        uploadedRefLogoBase64 = '';
+        showToast(`✓ "${name}" referans bandına eklendi!`);
+        loadAdminData();
+      }
+    }
+
+    async function deleteReference(id) {
+      await fetch(`/api/references/${id}`, { method: 'DELETE' });
+      showToast('Referans banttan çıkarıldı.');
+      loadAdminData();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+  </script>
+</body>
+</html>

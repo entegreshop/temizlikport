@@ -1,0 +1,37 @@
+[
+  {
+    "id": "RES-1042",
+    "createdAt": "2026-10-29T04:30:00.000Z",
+    "status": "Onaylandı",
+    "customerCompany": "Kuzey Teknoloji Plaza A.Ş.",
+    "customerPhone": "0532 410 88 90",
+    "serviceType": "Kurumsal Ofis & Plaza Temizliği",
+    "medusaVariantId": "variant_ofis_orta",
+    "squareMeters": 450,
+    "roomCount": 8,
+    "restroomCount": 4,
+    "frequency": "Haftada 2-3 Gün (%22 İndirim)",
+    "addons": ["ULV Soğuk Sisleme Dezenfeksiyon"],
+    "recommendedStaff": 3,
+    "calculatedPriceTL": 6840,
+    "preferredDate": "2026-11-02"
+  },
+  {
+    "id": "RES-1041",
+    "createdAt": "2026-10-28T16:15:00.000Z",
+    "status": "Keşif Planlandı",
+    "customerCompany": "Marmara Lojistik Depolama",
+    "customerPhone": "0544 812 33 10",
+    "serviceType": "Fabrika, Üretim & Depo Zemin Temizliği",
+    "medusaVariantId": "variant_fabrika_depo",
+    "squareMeters": 1400,
+    "roomCount": 6,
+    "restroomCount": 4,
+    "frequency": "Tek Seferlik",
+    "addons": ["İç/Dış Bölme Cam Detay Temizliği"],
+    "recommendedStaff": 8,
+    "calculatedPriceTL": 21870,
+    "preferredDate": "2026-11-04"
+  }
+]
+

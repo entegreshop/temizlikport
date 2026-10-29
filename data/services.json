@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "companyName": "TemizlikPort Kurumsal Hizmetler A.Ş.",
+    "phone": "+90 506 886 07 67",
+    "whatsapp": "+90 506 886 07 67",
+    "whatsappMessagePrefix": "Merhaba TemizlikPort, web sitenizdeki m² hesaplama motorundan kurumsal teklif almak istiyorum:",
+    "email": "kurumsal@temizlikport.com",
+    "roomSurchargeTL": 140,
+    "restroomSurchargeTL": 220,
+    "minOrderPriceTL": 1500,
+    "staffPerSqmNormal": 180,
+    "staffPerSqmConstruction": 100
+  },
+  "frequencies": [
+    {
+      "id": "once",
+      "label": "Tek Seferlik",
+      "discountPercent": 0,
+      "badge": "Standart"
+    },
+    {
+      "id": "weekly",
+      "label": "Haftada 1 Gün",
+      "discountPercent": 15,
+      "badge": "%15 İndirim"
+    },
+    {
+      "id": "biweekly",
+      "label": "Haftada 2-3 Gün",
+      "discountPercent": 22,
+      "badge": "%22 İndirim"
+    },
+    {
+      "id": "daily",
+      "label": "Her Gün (Sabit)",
+      "discountPercent": 30,
+      "badge": "%30 İndirim"
+    }
+  ],
+  "addons": [
+    {
+      "id": "carpet",
+      "title": "Yerinde Halıfleks & Koltuk Yıkama",
+      "price": 1450
+    },
+    {
+      "id": "disinfection",
+      "title": "ULV Soğuk Sisleme Dezenfeksiyon",
+      "price": 950
+    },
+    {
+      "id": "window_int",
+      "title": "İç/Dış Bölme Cam Detay Temizliği",
+      "price": 850
+    },
+    {
+      "id": "consumables",
+      "title": "Kağıt & Sıvı Sabun Sarf Paketi",
+      "price": 1100
+    }
+  ],
+  "services": [
+    {
+      "id": "prod_ofis_temizligi",
+      "code": "office",
+      "medusaVariantId": "variant_ofis_standart",
+      "title": "Kurumsal Ofis & Plaza Temizliği",
+      "handle": "kurumsal-ofis-temizligi",
+      "subtitle": "Periyodik veya Tek Seferlik Profesyonel Bakım",
+      "shortDesc": "Kurumsal çalışma alanları, toplantı odaları ve ortak alanlar",
+      "description": "Çalışma alanlarınız için mesai öncesi veya sonrası, İSG belgeli ve adli sicil kaydı doğrulanmış kadrolu personellerle hijyen standardı.",
+      "basePriceTL": 2450,
+      "baseFee": 1400,
+      "ratePerSqm": 9.5,
+      "unitLabel": "100 m²'ye kadar başlangıç",
+      "badge": "En Çok Tercih Edilen",
+      "features": [
+        "ISO 9001 & İSG Sertifikalı Kadrolu Personel",
+        "Endüstriyel Ekolojik Dezenfektanlar & Ekipman Dahil",
+        "1.000.000 ₺ Allianz İşyeri Hasar Güvence Sigortası",
+        "Sabit Personel & QR Kodlu Dijital Kontrol Çizelgesi"
+      ]
+    },
+    {
+      "id": "prod_insaat_sonrasi",
+      "code": "construction",
+      "medusaVariantId": "variant_insaat_sonrasi",
+      "title": "İnşaat & Tadilat Sonrası Temizlik",
+      "handle": "insaat-sonrasi-temizlik",
+      "subtitle": "Anahtar Teslim İnce Detay Temizliği",
+      "shortDesc": "İnce detay, boya/harç sökümü ve buharlı hijyen",
+      "description": "Boya, harç, silikon ve ince toz kalıntılarını yüzeylere zarar vermeyen özel buharlı makineler ve kimyasallarla anahtar teslim temizliyoruz.",
+      "basePriceTL": 4900,
+      "baseFee": 2800,
+      "ratePerSqm": 22,
+      "unitLabel": "Tam ekipman ve kimyasal dahil",
+      "badge": "Tam Ekipman Dahil",
+      "features": [
+        "Endüstriyel Vakum & Buharlı Kazıma Makineleri",
+        "Cam, Doğrama ve Bant/Etiket Söküm Garantisi",
+        "Aynı Gün Çoklu Ekip ile Hızlı Teslimat",
+        "Ücretsiz Ön Keşif veya Anlık Online Fiyat"
+      ]
+    },
+    {
+      "id": "prod_dis_cephe_cam",
+      "code": "facade",
+      "medusaVariantId": "variant_dis_cephe_cam",
+      "title": "Dış Cephe & Yüksekte Cam Temizliği",
+      "handle": "dis-cephe-cam-temizligi",
+      "subtitle": "Vinçli, Sepetli ve Dağcı (İple Erişim) Ekip",
+      "shortDesc": "Saf su sistemi, sepetli vinç veya IRATA dağcı ekip",
+      "description": "Plaza, hastane, otel ve iş merkezlerinin dış cephe kompozit ve cam yüzeylerini saf su (pure water) teknolojisiyle lekesiz temizliyoruz.",
+      "basePriceTL": 6500,
+      "baseFee": 3500,
+      "ratePerSqm": 18,
+      "unitLabel": "Proje & m² bazlı",
+      "badge": "IRATA / İSG Belgeli",
+      "features": [
+        "IRATA Sertifikalı Endüstriyel Dağcı Ekip",
+        "Saf Su Sistemi ile 60 Gün Gecikmeli Kirlenme",
+        "Tam Kapsamlı İSG Dosyası & Risk Analizi",
+        "Hafta Sonu / Mesai Dışı Operasyon"
+      ]
+    },
+    {
+      "id": "prod_fabrika_depo",
+      "code": "industrial",
+      "medusaVariantId": "variant_fabrika_depo",
+      "title": "Fabrika, Üretim & Depo Zemin Temizliği",
+      "handle": "fabrika-depo-temizligi",
+      "subtitle": "Binicili Otomat & Epoksi Zemin Bakımı",
+      "shortDesc": "Binicili otomat ile endüstriyel epoksi/beton yıkama",
+      "description": "Lojistik depolar, gıda üretim tesisleri ve fabrikalar için yağ çözme, epoksi/beton zemin yıkama ve yüksek tavan toz alma çözümleri.",
+      "basePriceTL": 8200,
+      "baseFee": 3900,
+      "ratePerSqm": 11,
+      "unitLabel": "500 m² ve üzeri tesisler",
+      "badge": "Endüstriyel Çözüm",
+      "features": [
+        "Binicili Zemin Yıkama Otomatları",
+        "Ağır Sanayi Yağ & Kir Çözücü Uygulama",
+        "Gıda Üretim (HACCP) Standartlarına Uygun",
+        "Kurumsal Faturalama & Sözleşmeli Hizmet"
+      ]
+    }
+  ],
+  "referencesSettings": {
+    "enabled": true,
+    "title": "Türkiye'nin Önde Gelen Kurumları Hijyen İçin TemizlikPort'a Güveniyor",
+    "speed": 30,
+    "pauseOnHover": true,
+    "grayscale": false
+  },
+  "references": [
+    {
+      "id": "ref-1",
+      "name": "AYAZ MÜHENDİSLİK",
+      "sector": "Merkez Ofis & Showroom",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%230284c7'/%3E%3Cpath%20d%3D'M18%2040L26%2022L34%2040'%20stroke%3D'%23fff'%20stroke-width%3D'3'%20fill%3D'none'/%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EAYAZ%20M%C3%9CHEND%C4%B0SL%C4%B0K%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-2",
+      "name": "KUZEY TEKNOLOJİ PLAZA",
+      "sector": "4.500 m² Plaza Yönetimi",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%231d4ed8'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%23fff'%3EK%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EKUZEY%20PLAZA%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-3",
+      "name": "MARMARA LOJİSTİK",
+      "sector": "12.000 m² Depo & Antrepo",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%23059669'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%23fff'%3EM%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EMARMARA%20LOJ%C4%B0ST%C4%B0K%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-4",
+      "name": "ACIBADEM MEDİKAL GRUP",
+      "sector": "Klinik & Laboratuvar Hijyeni",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%230891b2'/%3E%3Cpath%20d%3D'M26%2022v20M16%2032h20'%20stroke%3D'%23fff'%20stroke-width%3D'3.5'%20stroke-linecap%3D'round'/%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EMED%C4%B0KAL%20GRUP%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-5",
+      "name": "BODYKİT MERKEZİ",
+      "sector": "Üretim & Showroom Temizliği",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%23e11d48'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%23fff'%3EB%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EBODYK%C4%B0T%20MERKEZ%C4%B0%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-6",
+      "name": "BOĞAZİÇİ HOLDİNG",
+      "sector": "Dış Cephe & Genel Merkez",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%230f172a'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%2338bdf8'%3EB%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EBO%C4%9EAZ%C4%B0%C3%87%C4%B0%20HOLD%C4%B0NG%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-7",
+      "name": "NOVA GIDA SANAYİ",
+      "sector": "HACCP Üretim Tesisi Hijyeni",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%23d97706'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%23fff'%3EN%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3ENOVA%20GIDA%20A.%C5%9E.%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    },
+    {
+      "id": "ref-8",
+      "name": "ATLAS KOLEJİ KAMPÜSÜ",
+      "sector": "Eğitim Kampüsü Periyodik Bakım",
+      "logoUrl": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2064'%3E%3Crect%20x%3D'8'%20y%3D'14'%20width%3D'36'%20height%3D'36'%20rx%3D'9'%20fill%3D'%234f46e5'/%3E%3Ctext%20x%3D'26'%20y%3D'39'%20text-anchor%3D'middle'%20font-family%3D'Arial'%20font-size%3D'18'%20font-weight%3D'900'%20fill%3D'%23fff'%3EA%3C%2Ftext%3E%3Ctext%20x%3D'54'%20y%3D'39'%20font-family%3D'Space%20Grotesk%2C%20Arial%2C%20sans-serif'%20font-size%3D'18'%20font-weight%3D'800'%20fill%3D'%230f172a'%3EATLAS%20KAMP%C3%9CS%3C%2Ftext%3E%3C%2Fsvg%3E",
+      "active": true
+    }
+  ]
+}
