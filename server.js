@@ -1,4 +1,6 @@
 const http = require('http');
+const https = require('https');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -91,6 +93,76 @@ function saveBase64Logo(base64Str, prefix = 'ref') {
   return `/api/media/${filename}`;
 }
 
+function sha256Hash(val) {
+  if (!val) return undefined;
+  const normalized = String(val).trim().toLowerCase();
+  if (!normalized) return undefined;
+  return crypto.createHash('sha256').update(normalized).digest('hex');
+}
+
+function dispatchMetaCapiEvent({ tracking, eventName, eventSourceUrl, clientIp, userAgent, customData, userData }) {
+  return new Promise((resolve) => {
+    const pixelId = String((tracking && tracking.metaPixelId) || '').trim();
+    const accessToken = String((tracking && tracking.metaAccessToken) || '').trim();
+    if (!pixelId || !accessToken) {
+      return resolve({ skipped: true, reason: 'Meta Pixel ID veya CAPI Access Token tanımlı değil' });
+    }
+
+    const cleanPhone = String((userData && userData.phone) || '').replace(/\D/g, '');
+    const normalizedPhone = cleanPhone.startsWith('0') ? '9' + cleanPhone : (cleanPhone && !cleanPhone.startsWith('90') ? '90' + cleanPhone : cleanPhone);
+
+    const userPayload = {
+      client_ip_address: clientIp || undefined,
+      client_user_agent: userAgent || undefined
+    };
+    if (normalizedPhone) userPayload.ph = [sha256Hash(normalizedPhone)];
+    if (userData && userData.company) userPayload.fn = [sha256Hash(userData.company)];
+
+    const eventPayload = {
+      data: [
+        {
+          event_name: eventName || 'Lead',
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: 'website',
+          event_source_url: eventSourceUrl || 'https://temizlikport.com',
+          user_data: userPayload,
+          custom_data: customData || { currency: 'TRY', value: 0 }
+        }
+      ]
+    };
+
+    if (tracking.metaTestEventCode && String(tracking.metaTestEventCode).trim()) {
+      eventPayload.test_event_code = String(tracking.metaTestEventCode).trim();
+    }
+
+    const postBody = JSON.stringify(eventPayload);
+    const reqOpts = {
+      hostname: 'graph.facebook.com',
+      path: `/v19.0/${encodeURIComponent(pixelId)}/events?access_token=${encodeURIComponent(accessToken)}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postBody)
+      }
+    };
+
+    const fbReq = https.request(reqOpts, (fbRes) => {
+      let raw = '';
+      fbRes.on('data', d => { raw += d; });
+      fbRes.on('end', () => {
+        try {
+          resolve({ status: fbRes.statusCode, response: JSON.parse(raw) });
+        } catch {
+          resolve({ status: fbRes.statusCode, raw });
+        }
+      });
+    });
+    fbReq.on('error', (err) => resolve({ error: err.message }));
+    fbReq.write(postBody);
+    fbReq.end();
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     return sendJson(res, 200, { ok: true });
@@ -146,10 +218,11 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, { products, count: products.length });
   }
 
-  // 4. GET & POST /api/services (Full Pricing Rules, Services, Frequencies, Addons & References)
+  // 4. GET & POST /api/services (Full Pricing Rules, Services, Frequencies, Addons, References & Tracking)
   if (pathname === '/api/services' && req.method === 'GET') {
     const data = readJson(SERVICES_FILE, {
       settings: {},
+      tracking: {},
       frequencies: [],
       addons: [],
       services: [],
@@ -166,6 +239,7 @@ const server = http.createServer(async (req, res) => {
       const updated = {
         ...current,
         settings: body.settings ? { ...current.settings, ...body.settings } : current.settings,
+        tracking: body.tracking ? { ...(current.tracking || {}), ...body.tracking } : (current.tracking || {}),
         frequencies: Array.isArray(body.frequencies) ? body.frequencies : current.frequencies,
         addons: Array.isArray(body.addons) ? body.addons : current.addons,
         services: Array.isArray(body.services) ? body.services : current.services,
@@ -176,6 +250,50 @@ const server = http.createServer(async (req, res) => {
       };
       writeJson(SERVICES_FILE, updated);
       return sendJson(res, 200, { success: true, ...updated });
+    } catch (e) {
+      return sendJson(res, 400, { success: false, error: e.message });
+    }
+  }
+
+  // 4b. GET /api/tracking/public (Storefront Tracking Config - Excludes secret CAPI token)
+  if (pathname === '/api/tracking/public' && req.method === 'GET') {
+    const current = readJson(SERVICES_FILE, {});
+    const tr = current.tracking || {};
+    return sendJson(res, 200, {
+      success: true,
+      tracking: {
+        ga4MeasurementId: tr.ga4MeasurementId || '',
+        gtmContainerId: tr.gtmContainerId || '',
+        googleAdsId: tr.googleAdsId || '',
+        googleAdsConversionLabel: tr.googleAdsConversionLabel || '',
+        googleAdsWhatsappLabel: tr.googleAdsWhatsappLabel || '',
+        metaPixelId: tr.metaPixelId || '',
+        capiEnabled: Boolean(tr.metaPixelId && tr.metaAccessToken),
+        customHeadHtml: tr.customHeadHtml || '',
+        customBodyHtml: tr.customBodyHtml || ''
+      }
+    });
+  }
+
+  // 4c. POST /api/tracking/capi (Server-Side Meta Conversions API Endpoint)
+  if (pathname === '/api/tracking/capi' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const current = readJson(SERVICES_FILE, {});
+      const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      const result = await dispatchMetaCapiEvent({
+        tracking: current.tracking || {},
+        eventName: body.eventName || 'Lead',
+        eventSourceUrl: body.eventSourceUrl || `https://${req.headers.host || 'temizlikport.com'}`,
+        clientIp,
+        userAgent,
+        customData: body.customData || { currency: 'TRY', value: 0 },
+        userData: body.userData || {}
+      });
+
+      return sendJson(res, 200, { success: true, capi: result });
     } catch (e) {
       return sendJson(res, 400, { success: false, error: e.message });
     }
@@ -250,6 +368,29 @@ const server = http.createServer(async (req, res) => {
       };
       list.unshift(newRes);
       writeJson(RESERVATIONS_FILE, list);
+
+      // Automatically trigger Server-Side Meta CAPI Lead event if configured
+      const storeConfig = readJson(SERVICES_FILE, {});
+      const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+      dispatchMetaCapiEvent({
+        tracking: storeConfig.tracking || {},
+        eventName: 'Lead',
+        eventSourceUrl: `https://${req.headers.host || 'temizlikport.com'}/#fiyat-hesapla`,
+        clientIp,
+        userAgent,
+        customData: {
+          currency: 'TRY',
+          value: newRes.calculatedPriceTL,
+          content_name: newRes.serviceType,
+          content_category: `${newRes.squareMeters} m2 - ${newRes.frequency}`
+        },
+        userData: {
+          phone: newRes.customerPhone,
+          company: newRes.customerCompany
+        }
+      }).catch(() => {});
+
       return sendJson(res, 201, {
         success: true,
         reservationId: newRes.id,

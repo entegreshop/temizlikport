@@ -716,6 +716,7 @@
             }
 
             renderReferencesMarquee(data.referencesSettings || {}, data.references || []);
+            initTrackingAndCustomCodes(data.tracking || {});
           } catch (e) {}
         },
 
@@ -779,6 +780,18 @@
           ];
 
           const waUrl = `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
+          if (typeof window.tpTrackConversion === 'function') {
+            window.tpTrackConversion('Lead', {
+              value: this.finalPrice,
+              currency: 'TRY',
+              content_name: `WhatsApp Teklif - ${this.currentService.name}`,
+              content_category: `${this.squareMeters} m2`
+            }, {
+              company: this.customerCompany,
+              phone: this.customerPhone,
+              isWhatsapp: true
+            });
+          }
           window.open(waUrl, '_blank');
         },
 
@@ -821,6 +834,19 @@
             });
             const data = await res.json();
             if (data.success) {
+              if (typeof window.tpTrackConversion === 'function') {
+                window.tpTrackConversion('Lead', {
+                  value: this.finalPrice,
+                  currency: 'TRY',
+                  content_name: this.currentService.name,
+                  content_category: `${this.squareMeters} m2 - ${this.currentFrequencyObj.label}`,
+                  transaction_id: data.reservationId
+                }, {
+                  company: this.customerCompany,
+                  phone: this.customerPhone,
+                  skipServerCapi: true // Server already dispatched CAPI on POST /api/reservation.json
+                });
+              }
               this.submitSuccessMessage = `✓ Talebiniz alındı (${data.reservationId})! ${this.squareMeters} m² (${this.formatCurrency(this.finalPrice)}) teklifiniz kaydedildi.`;
               this.customerCompany = '';
               this.customerPhone = '';
@@ -922,6 +948,164 @@
         </article>
       `).join('');
     }
+
+    // ============================================================================
+    // GOOGLE ANALYTICS 4, GOOGLE ADS, GTM, META PIXEL + CAPI & ÖZEL KOD ENJEKSİYONU
+    // ============================================================================
+    window.__tpTrackingConfig = {};
+    window.__tpTrackingInitialized = false;
+
+    function injectHtmlWithExecutableScripts(targetElement, htmlString) {
+      if (!targetElement || !htmlString || !String(htmlString).trim()) return;
+      const container = document.createElement('div');
+      container.innerHTML = htmlString;
+      Array.from(container.childNodes).forEach(node => {
+        if (node.nodeName && node.nodeName.toUpperCase() === 'SCRIPT') {
+          const s = document.createElement('script');
+          Array.from(node.attributes || []).forEach(attr => s.setAttribute(attr.name, attr.value));
+          s.text = node.textContent || '';
+          targetElement.appendChild(s);
+        } else {
+          targetElement.appendChild(node.cloneNode(true));
+        }
+      });
+    }
+
+    function initTrackingAndCustomCodes(tracking) {
+      if (window.__tpTrackingInitialized) return;
+      window.__tpTrackingInitialized = true;
+      window.__tpTrackingConfig = tracking || {};
+
+      const ga4Id = String(tracking.ga4MeasurementId || '').trim();
+      const gAdsId = String(tracking.googleAdsId || '').trim();
+      const gtmId = String(tracking.gtmContainerId || '').trim();
+      const metaPixelId = String(tracking.metaPixelId || '').trim();
+
+      // 1. Google Tag Manager (GTM)
+      if (gtmId) {
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',gtmId);
+      }
+
+      // 2. Google Analytics 4 (GA4) & Google Ads (gtag.js)
+      const primaryGtagId = ga4Id || gAdsId;
+      if (primaryGtagId) {
+        const gScript = document.createElement('script');
+        gScript.async = true;
+        gScript.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(primaryGtagId)}`;
+        document.head.appendChild(gScript);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){ window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        if (ga4Id) window.gtag('config', ga4Id);
+        if (gAdsId) window.gtag('config', gAdsId);
+      }
+
+      // 3. Meta Pixel (Facebook / Instagram Ads)
+      if (metaPixelId) {
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        window.fbq('init', metaPixelId);
+        window.fbq('track', 'PageView');
+      }
+
+      // 4. Özel <head> ve <body> Kod Alanları (Search Console, Clarity, Hotjar, Ek Scriptler)
+      if (tracking.customHeadHtml) {
+        injectHtmlWithExecutableScripts(document.head, tracking.customHeadHtml);
+      }
+      if (tracking.customBodyHtml) {
+        injectHtmlWithExecutableScripts(document.body, tracking.customBodyHtml);
+      }
+
+      // 5. Telefon ve WhatsApp Buton Tıklamalarını Otomatik Dönüşüm Olarak İzle
+      ['top-wa-link', 'header-wa-btn', 'hero-wa-btn', 'floating-whatsapp-btn', 'top-phone-link'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('click', () => {
+            window.tpTrackConversion('Contact', {
+              value: 1500,
+              currency: 'TRY',
+              content_name: id.includes('phone') ? 'Telefon Arama Tıklaması' : 'WhatsApp Hızlı İletişim'
+            }, { isWhatsapp: !id.includes('phone') });
+          });
+        }
+      });
+    }
+
+    window.tpTrackConversion = function(eventName, eventData = {}, userData = {}) {
+      const tr = window.__tpTrackingConfig || {};
+      const val = Number(eventData.value || 0);
+      const curr = eventData.currency || 'TRY';
+
+      // A) Google Analytics 4 Event
+      if (typeof window.gtag === 'function') {
+        const gaEventName = eventName === 'Lead' ? 'generate_lead' : 'contact';
+        window.gtag('event', gaEventName, {
+          currency: curr,
+          value: val,
+          event_category: eventData.content_category || 'Kurumsal Temizlik',
+          event_label: eventData.content_name || eventName
+        });
+
+        // B) Google Ads Conversion Tracking
+        const gAdsId = String(tr.googleAdsId || '').trim();
+        const convLabel = userData.isWhatsapp && tr.googleAdsWhatsappLabel
+          ? String(tr.googleAdsWhatsappLabel).trim()
+          : String(tr.googleAdsConversionLabel || '').trim();
+
+        if (gAdsId && convLabel) {
+          const sendTo = convLabel.includes('/') ? convLabel : `${gAdsId}/${convLabel}`;
+          window.gtag('event', 'conversion', {
+            send_to: sendTo,
+            value: val,
+            currency: curr,
+            transaction_id: eventData.transaction_id || ('tp_' + Date.now())
+          });
+        }
+      }
+
+      // C) Meta Pixel (Browser-Side)
+      if (typeof window.fbq === 'function') {
+        window.fbq('track', eventName, {
+          value: val,
+          currency: curr,
+          content_name: eventData.content_name || 'Kurumsal Temizlik Teklifi',
+          content_category: eventData.content_category || 'Kurumsal Hizmet'
+        });
+      }
+
+      // D) Meta Conversions API (Server-Side CAPI)
+      if (!userData.skipServerCapi && tr.metaPixelId) {
+        fetch('/api/tracking/capi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName,
+            eventSourceUrl: window.location.href,
+            customData: {
+              value: val,
+              currency: curr,
+              content_name: eventData.content_name || 'Kurumsal Temizlik Teklifi',
+              content_category: eventData.content_category || 'Kurumsal Hizmet'
+            },
+            userData: {
+              company: userData.company || '',
+              phone: userData.phone || ''
+            }
+          })
+        }).catch(() => {});
+      }
+    };
   </script>
 
 </body>

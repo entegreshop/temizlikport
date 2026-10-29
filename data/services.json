@@ -11,6 +11,18 @@
     "staffPerSqmNormal": 180,
     "staffPerSqmConstruction": 100
   },
+  "tracking": {
+    "ga4MeasurementId": "",
+    "gtmContainerId": "",
+    "googleAdsId": "",
+    "googleAdsConversionLabel": "",
+    "googleAdsWhatsappLabel": "",
+    "metaPixelId": "",
+    "metaAccessToken": "",
+    "metaTestEventCode": "",
+    "customHeadHtml": "",
+    "customBodyHtml": ""
+  },
   "frequencies": [
     {
       "id": "once",
